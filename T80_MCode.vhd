@@ -150,14 +150,6 @@ end T80_MCode;
 
 architecture rtl of T80_MCode is
 
-	constant aNone : std_logic_vector(2 downto 0) := "111";
-	constant aBC   : std_logic_vector(2 downto 0) := "000";
-	constant aDE   : std_logic_vector(2 downto 0) := "001";
-	constant aXY   : std_logic_vector(2 downto 0) := "010";
-	constant aIOA  : std_logic_vector(2 downto 0) := "100";
-	constant aSP   : std_logic_vector(2 downto 0) := "101";
-	constant aZI   : std_logic_vector(2 downto 0) := "110";
-
 	function is_cc_true(
 		F : std_logic_vector(7 downto 0);
 		cc : bit_vector(2 downto 0)
@@ -807,13 +799,11 @@ begin
 					Set_Addr_To <= aSP;
 					Set_BusB_To <= "1101";
 				when 2 =>
-					TStates <= "100";
 					Write <= '1';
 					IncDec_16 <= "1111";
 					Set_Addr_To <= aSP;
 					Set_BusB_To <= "1100";
 				when 3 =>
-					TStates <= "100";
 					Write <= '1';
 				when others => null;
 				end case;
