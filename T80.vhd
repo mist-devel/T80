@@ -1164,5 +1164,5 @@ begin
 		end if;
 	end process;
 
-	Auto_Wait <= '1' when IntCycle = '1' and MCycle = "001" else '0';
+	Auto_Wait <= '1' when (IntCycle = '1' or NMICycle = '1') and MCycle = "001" else '0';
 end;
