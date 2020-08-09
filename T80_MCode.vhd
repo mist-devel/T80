@@ -1180,20 +1180,36 @@ begin
 			end if;
 		when "11001001" =>
 			-- RET
-			MCycles <= "011";
-			case to_integer(unsigned(MCycle)) is
-			when 1 =>
-				--TStates <= "101";
-				Set_Addr_TO <= aSP;
-			when 2 =>
-				IncDec_16 <= "0111";
-				Set_Addr_To <= aSP;
-				LDZ <= '1';
-			when 3 =>
-				Jump <= '1';
-				IncDec_16 <= "0111";
-			when others => null;
-			end case;
+			if Mode = 3 then
+				MCycles <= "100";
+				case to_integer(unsigned(MCycle)) is
+				when 2 =>
+					Set_Addr_TO <= aSP;
+				when 3 =>
+					IncDec_16 <= "0111";
+					Set_Addr_To <= aSP;
+					LDZ <= '1';
+				when 4 =>
+					Jump <= '1';
+					IncDec_16 <= "0111";
+				when others => null;
+				end case;
+			else
+				MCycles <= "011";
+				case to_integer(unsigned(MCycle)) is
+				when 1 =>
+					--TStates <= "101";
+					Set_Addr_TO <= aSP;
+				when 2 =>
+					IncDec_16 <= "0111";
+					Set_Addr_To <= aSP;
+					LDZ <= '1';
+				when 3 =>
+					Jump <= '1';
+					IncDec_16 <= "0111";
+				when others => null;
+				end case;
+			end if;
 		when "11000000"|"11001000"|"11010000"|"11011000"|"11100000"|"11101000"|"11110000"|"11111000" =>
 			if IR(5) = '1' and Mode = 3 then
 				case IRB(4 downto 3) is
