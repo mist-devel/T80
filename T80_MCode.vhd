@@ -1126,7 +1126,11 @@ begin
 -- CALL AND RETURN GROUP
 		when "11001101" =>
 			-- CALL nn
-			MCycles <= "101";
+			if Mode = 3 then
+				MCycles <= "110";
+			else
+				MCycles <= "101";
+			end if;
 			case to_integer(unsigned(MCycle)) is
 			when 2 =>
 				Inc_PC <= '1';
@@ -1151,7 +1155,11 @@ begin
 		when "11000100"|"11001100"|"11010100"|"11011100"|"11100100"|"11101100"|"11110100"|"11111100" =>
 			if IR(5) = '0' or Mode /= 3 then
 				-- CALL cc,nn
-				MCycles <= "101";
+				if Mode = 3 then
+					MCycles <= "110";
+				else
+					MCycles <= "101";
+				end if;
 				case to_integer(unsigned(MCycle)) is
 				when 2 =>
 					Inc_PC <= '1';
