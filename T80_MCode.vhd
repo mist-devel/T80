@@ -985,9 +985,9 @@ begin
 					when 1 =>
 						Set_Addr_To <= aBC;
 						Set_BusB_To	<= "0111";
+						IORQ <= '1'; --TH  must be earlier to be stable when address is generated
 					when 2 =>
 						Write <= '1';
-						IORQ <= '1';
 					when others =>
 					end case;
 				when "01" =>
@@ -1011,9 +1011,9 @@ begin
 					case to_integer(unsigned(MCycle)) is
 					when 1 =>
 						Set_Addr_To <= aBC;
+						IORQ <= '1'; --TH  must be earlier to be stable when address is generated
 					when 2 =>
 						Read_To_Acc <= '1';
-						IORQ <= '1';
 					when others =>
 					end case;
 				when "11" =>
