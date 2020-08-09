@@ -1300,23 +1300,43 @@ begin
 			end if;
 		when "11000111"|"11001111"|"11010111"|"11011111"|"11100111"|"11101111"|"11110111"|"11111111" =>
 			-- RST p
-			MCycles <= "011";
-			case to_integer(unsigned(MCycle)) is
-			when 1 =>
-				TStates <= "101";
-				IncDec_16 <= "1111";
-				Set_Addr_To <= aSP;
-				Set_BusB_To <= "1101";
-			when 2 =>
-				Write <= '1';
-				IncDec_16 <= "1111";
-				Set_Addr_To <= aSP;
-				Set_BusB_To <= "1100";
-			when 3 =>
-				Write <= '1';
-				RstP <= '1';
-			when others => null;
-			end case;
+			if Mode = 3 then
+				MCycles <= "100";
+				case to_integer(unsigned(MCycle)) is
+				when 2 =>
+					TStates <= "101";
+					IncDec_16 <= "1111";
+					Set_Addr_To <= aSP;
+					Set_BusB_To <= "1101";
+				when 3 =>
+					Write <= '1';
+					IncDec_16 <= "1111";
+					Set_Addr_To <= aSP;
+					Set_BusB_To <= "1100";
+				when 4 =>
+					Write <= '1';
+					RstP <= '1';
+				when others => null;
+				end case;
+			else
+				MCycles <= "011";
+				case to_integer(unsigned(MCycle)) is
+				when 1 =>
+					TStates <= "101";
+					IncDec_16 <= "1111";
+					Set_Addr_To <= aSP;
+					Set_BusB_To <= "1101";
+				when 2 =>
+					Write <= '1';
+					IncDec_16 <= "1111";
+					Set_Addr_To <= aSP;
+					Set_BusB_To <= "1100";
+				when 3 =>
+					Write <= '1';
+					RstP <= '1';
+				when others => null;
+				end case;
+			end if;
 
 -- INPUT AND OUTPUT GROUP
 		when "11011011" =>
