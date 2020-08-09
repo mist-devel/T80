@@ -519,34 +519,65 @@ begin
 			LDSPHL <= '1';
 		when "11000101"|"11010101"|"11100101"|"11110101" =>
 			-- PUSH qq
-			MCycles <= "011";
-			case to_integer(unsigned(MCycle)) is
-			when 1 =>
-				TStates <= "101";
-				IncDec_16 <= "1111";
-				Set_Addr_TO <= aSP;
-				if DPAIR = "11" then
-					Set_BusB_To <= "0111";
-				else
-					Set_BusB_To(2 downto 1) <= DPAIR;
-					Set_BusB_To(0) <= '0';
-					Set_BusB_To(3) <= '0';
-				end if;
-			when 2 =>
-				IncDec_16 <= "1111";
-				Set_Addr_To <= aSP;
-				if DPAIR = "11" then
-					Set_BusB_To <= "1011";
-				else
-					Set_BusB_To(2 downto 1) <= DPAIR;
-					Set_BusB_To(0) <= '1';
-					Set_BusB_To(3) <= '0';
-				end if;
-				Write <= '1';
-			when 3 =>
-				Write <= '1';
-			when others => null;
-			end case;
+			if Mode = 3 then
+				MCycles <= "100";
+				case to_integer(unsigned(MCycle)) is
+				when 2 =>
+					TStates <= "101";
+					IncDec_16 <= "1111";
+					Set_Addr_TO <= aSP;
+					if DPAIR = "11" then
+						Set_BusB_To <= "0111";
+					else
+						Set_BusB_To(2 downto 1) <= DPAIR;
+						Set_BusB_To(0) <= '0';
+						Set_BusB_To(3) <= '0';
+					end if;
+				when 3 =>
+					IncDec_16 <= "1111";
+					Set_Addr_To <= aSP;
+					if DPAIR = "11" then
+						Set_BusB_To <= "1011";
+					else
+						Set_BusB_To(2 downto 1) <= DPAIR;
+						Set_BusB_To(0) <= '1';
+						Set_BusB_To(3) <= '0';
+					end if;
+					Write <= '1';
+				when 4 =>
+					Write <= '1';
+				when others => null;
+				end case;
+			else
+				MCycles <= "011";
+				case to_integer(unsigned(MCycle)) is
+				when 1 =>
+					TStates <= "101";
+					IncDec_16 <= "1111";
+					Set_Addr_TO <= aSP;
+					if DPAIR = "11" then
+						Set_BusB_To <= "0111";
+					else
+						Set_BusB_To(2 downto 1) <= DPAIR;
+						Set_BusB_To(0) <= '0';
+						Set_BusB_To(3) <= '0';
+					end if;
+				when 2 =>
+					IncDec_16 <= "1111";
+					Set_Addr_To <= aSP;
+					if DPAIR = "11" then
+						Set_BusB_To <= "1011";
+					else
+						Set_BusB_To(2 downto 1) <= DPAIR;
+						Set_BusB_To(0) <= '1';
+						Set_BusB_To(3) <= '0';
+					end if;
+					Write <= '1';
+				when 3 =>
+					Write <= '1';
+				when others => null;
+				end case;
+			end if;
 		when "11000001"|"11010001"|"11100001"|"11110001" =>
 			-- POP qq
 			MCycles <= "011";
