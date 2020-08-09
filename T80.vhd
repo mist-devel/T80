@@ -212,6 +212,7 @@ architecture rtl of T80 is
 	signal Set_BusA_To          : std_logic_vector(3 downto 0);
 	signal ALU_Op               : std_logic_vector(3 downto 0);
 	signal Save_ALU             : std_logic;
+	signal Rot_Akku             : std_logic;
 	signal PreserveC            : std_logic;
 	signal Arith16              : std_logic;
 	signal Set_Addr_To          : std_logic_vector(2 downto 0);
@@ -291,6 +292,7 @@ begin
 			Set_BusA_To => Set_BusA_To,
 			ALU_Op      => ALU_Op,
 			Save_ALU    => Save_ALU,
+			Rot_Akku    => Rot_Akku,
 			PreserveC   => PreserveC,
 			Arith16     => Arith16,
 			Set_Addr_To => Set_Addr_To,
@@ -345,6 +347,7 @@ begin
 			WZ      => WZ,
 			XY_State=> XY_State,
 			ALU_Op  => ALU_Op_r,
+			Rot_Akku    => Rot_Akku,
 			IR      => IR(5 downto 0),
 			ISet    => ISet,
 			BusA    => BusA,
@@ -579,29 +582,50 @@ begin
 						Save_ALU_r <= Save_ALU;
 						ALU_Op_r <= ALU_Op;
 
-						if I_CPL = '1' then
-							-- CPL
-							ACC <= not ACC;
-							F(Flag_Y) <= not ACC(5);
-							F(Flag_H) <= '1';
-							F(Flag_X) <= not ACC(3);
-							F(Flag_N) <= '1';
-						end if;
-						if I_CCF = '1' then
-							-- CCF
-							F(Flag_C) <= not F(Flag_C);
-							F(Flag_Y) <= ACC(5);
-							F(Flag_H) <= F(Flag_C);
-							F(Flag_X) <= ACC(3);
-							F(Flag_N) <= '0';
-						end if;
-						if I_SCF = '1' then
-							-- SCF
-							F(Flag_C) <= '1';
-							F(Flag_Y) <= ACC(5);
-							F(Flag_H) <= '0';
-							F(Flag_X) <= ACC(3);
-							F(Flag_N) <= '0';
+						if Mode = 3 then
+							if I_CPL = '1' then
+								-- CPL
+								ACC <= not ACC;
+								F(Flag_H) <= '1';
+								F(Flag_N) <= '1';
+							end if;
+							if I_CCF = '1' then
+								-- CCF
+								F(Flag_C) <= not F(Flag_C);
+								F(Flag_H) <= '0';
+								F(Flag_N) <= '0';
+							end if;
+							if I_SCF = '1' then
+								-- SCF
+								F(Flag_C) <= '1';
+								F(Flag_H) <= '0';
+								F(Flag_N) <= '0';
+							end if;
+						else
+							if I_CPL = '1' then
+								-- CPL
+								ACC <= not ACC;
+								F(Flag_Y) <= not ACC(5);
+								F(Flag_H) <= '1';
+								F(Flag_X) <= not ACC(3);
+								F(Flag_N) <= '1';
+							end if;
+							if I_CCF = '1' then
+								-- CCF
+								F(Flag_C) <= not F(Flag_C);
+								F(Flag_Y) <= ACC(5);
+								F(Flag_H) <= F(Flag_C);
+								F(Flag_X) <= ACC(3);
+								F(Flag_N) <= '0';
+							end if;
+							if I_SCF = '1' then
+								-- SCF
+								F(Flag_C) <= '1';
+								F(Flag_Y) <= ACC(5);
+								F(Flag_H) <= '0';
+								F(Flag_X) <= ACC(3);
+								F(Flag_N) <= '0';
+							end if;
 						end if;
 					end if;
 

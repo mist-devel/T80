@@ -89,6 +89,7 @@ entity T80_ALU is
 		WZ              : in  std_logic_vector(15 downto 0);
 		XY_State		    : in  std_logic_vector(1 downto 0);
 		ALU_Op          : in  std_logic_vector(3 downto 0);
+		Rot_Akku        : in  std_logic;
 		IR              : in  std_logic_vector(5 downto 0);
 		ISet            : in  std_logic_vector(1 downto 0);
 		BusA            : in  std_logic_vector(7 downto 0);
@@ -397,6 +398,9 @@ begin
 				F_Out(Flag_S) <= F_In(Flag_S);
 				F_Out(Flag_Z) <= F_In(Flag_Z);
 			end if;
+			if Mode = 3 and Rot_Akku = '1'  then
+					F_Out(Flag_Z) <= '0';
+			end if; 
 		when others =>
 			null;
 		end case;
