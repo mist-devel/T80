@@ -652,7 +652,7 @@ begin
 		when "11011001" =>
 			if Mode = 3 then
 				-- RETI
-				MCycles <= "011";
+				MCycles <= "100";
 				case to_integer(unsigned(MCycle)) is
 				when 1 =>
 					Set_Addr_TO <= aSP;
@@ -663,7 +663,7 @@ begin
 				when 3 =>
 					Jump <= '1';
 					IncDec_16 <= "0111";
-					I_RETN <= '1';
+					--I_RETN <= '1';
 					SetEI <= '1';
 				when others => null;
 				end case;
