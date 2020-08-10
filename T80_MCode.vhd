@@ -160,10 +160,10 @@ architecture rtl of T80_MCode is
 	begin
 		if Mode = 3 then
 			case cc is
-			when "000" => return F(Flag_S) = '0'; -- NZ
-			when "001" => return F(Flag_S) = '1'; -- Z
-			when "010" => return F(Flag_H) = '0'; -- NC
-			when "011" => return F(Flag_H) = '1'; -- C
+			when "000" => return F(Flag_Z) = '0'; -- NZ
+			when "001" => return F(Flag_Z) = '1'; -- Z
+			when "010" => return F(Flag_C) = '0'; -- NC
+			when "011" => return F(Flag_C) = '1'; -- C
 			when "100" => return false;
 			when "101" => return false;
 			when "110" => return false;
