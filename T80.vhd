@@ -386,6 +386,11 @@ begin
 
 			ACC <= (others => '1');
 			F <= (others => '1');
+			if Mode = 3 then
+				ACC <= (others => '0');
+				F <= "11110000";
+			end if;
+
 			Ap <= (others => '1');
 			Fp <= (others => '1');
 			I <= (others => '0');
