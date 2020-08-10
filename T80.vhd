@@ -226,6 +226,7 @@ architecture rtl of T80 is
 	signal LDW                  : std_logic;
 	signal LDSPHL               : std_logic;
 	signal LDHLSP               : std_logic;
+	signal ADDSPdd              : std_logic;
 	signal IORQ_i               : std_logic;
 	signal Special_LD           : std_logic_vector(2 downto 0);
 	signal ExchangeDH           : std_logic;
@@ -308,6 +309,7 @@ begin
 			LDW         => LDW,
 			LDSPHL      => LDSPHL,
 			LDHLSP      => LDHLSP,
+			ADDSPdd     => ADDSPdd,
 			Special_LD  => Special_LD,
 			ExchangeDH  => ExchangeDH,
 			ExchangeRp  => ExchangeRp,
@@ -435,6 +437,15 @@ begin
 				MCycles <= MCycles_d;
 
 				if LDHLSP = '1' and MCycle = "011" and TState = 1 then
+					temp_c := unsigned('0'&SP(7 downto 0))+unsigned('0'&Save_Mux);
+					temp_h := unsigned('0'&SP(3 downto 0))+unsigned('0'&Save_Mux(3 downto 0));
+					F(Flag_Z) <= '0';
+					F(Flag_N) <= '0';
+					F(Flag_H) <= temp_h(4);
+					F(Flag_C) <= temp_c(8);
+				end if;
+
+				if ADDSPdd = '1' and TState = 1 then
 					temp_c := unsigned('0'&SP(7 downto 0))+unsigned('0'&Save_Mux);
 					temp_h := unsigned('0'&SP(3 downto 0))+unsigned('0'&Save_Mux(3 downto 0));
 					F(Flag_Z) <= '0';
@@ -693,6 +704,11 @@ begin
 								SP <= SP + 1;
 							end if;
 						end if;
+					end if;
+
+					if ADDSPdd = '1' and TState = 2 then
+						WZ <= std_logic_vector(SP);
+						SP <= unsigned(signed(SP)+signed(Save_Mux));
 					end if;
 
 					if LDSPHL = '1' then
