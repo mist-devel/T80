@@ -902,39 +902,75 @@ begin
 -- 16 BIT ARITHMETIC GROUP
 		when "00001001"|"00011001"|"00101001"|"00111001" =>
 			-- ADD HL,ss
-			MCycles <= "011";
-			case to_integer(unsigned(MCycle)) is
-			when 2 =>
-				NoRead <= '1';
-				ALU_Op <= "0000";
-				Read_To_Reg <= '1';
-				Save_ALU <= '1';
-				Set_BusA_To(2 downto 0) <= "101";
-				case to_integer(unsigned(IR(5 downto 4))) is
-				when 0|1|2 =>
-					Set_BusB_To(2 downto 1) <= IR(5 downto 4);
-					Set_BusB_To(0) <= '1';
+			if Mode = 3 then
+				MCycles <= "010";
+				case to_integer(unsigned(MCycle)) is
+				when 1 =>
+					NoRead <= '1';
+					ALU_Op <= "0000";
+					Read_To_Reg <= '1';
+					Save_ALU <= '1';
+					Set_BusA_To(2 downto 0) <= "101";
+					case to_integer(unsigned(IR(5 downto 4))) is
+					when 0|1|2 =>
+						Set_BusB_To(2 downto 1) <= IR(5 downto 4);
+						Set_BusB_To(0) <= '1';
+					when others =>
+						Set_BusB_To <= "1000";
+					end case;
+					TStates <= "100";
+					Arith16 <= '1';
+					SetWZ <= "11";
+				when 2 =>
+					NoRead <= '1';
+					Read_To_Reg <= '1';
+					Save_ALU <= '1';
+					ALU_Op <= "0001";
+					Set_BusA_To(2 downto 0) <= "100";
+					case to_integer(unsigned(IR(5 downto 4))) is
+					when 0|1|2 =>
+						Set_BusB_To(2 downto 1) <= IR(5 downto 4);
+					when others =>
+						Set_BusB_To <= "1001";
+					end case;
+					Arith16 <= '1';
 				when others =>
-					Set_BusB_To <= "1000";
 				end case;
-				TStates <= "100";
-				Arith16 <= '1';
-				SetWZ <= "11";
-			when 3 =>
-				NoRead <= '1';
-				Read_To_Reg <= '1';
-				Save_ALU <= '1';
-				ALU_Op <= "0001";
-				Set_BusA_To(2 downto 0) <= "100";
-				case to_integer(unsigned(IR(5 downto 4))) is
-				when 0|1|2 =>
-					Set_BusB_To(2 downto 1) <= IR(5 downto 4);
+			else
+				MCycles <= "011";
+				case to_integer(unsigned(MCycle)) is
+				when 2 =>
+					NoRead <= '1';
+					ALU_Op <= "0000";
+					Read_To_Reg <= '1';
+					Save_ALU <= '1';
+					Set_BusA_To(2 downto 0) <= "101";
+					case to_integer(unsigned(IR(5 downto 4))) is
+					when 0|1|2 =>
+						Set_BusB_To(2 downto 1) <= IR(5 downto 4);
+						Set_BusB_To(0) <= '1';
+					when others =>
+						Set_BusB_To <= "1000";
+					end case;
+					TStates <= "100";
+					Arith16 <= '1';
+					SetWZ <= "11";
+				when 3 =>
+					NoRead <= '1';
+					Read_To_Reg <= '1';
+					Save_ALU <= '1';
+					ALU_Op <= "0001";
+					Set_BusA_To(2 downto 0) <= "100";
+					case to_integer(unsigned(IR(5 downto 4))) is
+					when 0|1|2 =>
+						Set_BusB_To(2 downto 1) <= IR(5 downto 4);
+					when others =>
+						Set_BusB_To <= "1001";
+					end case;
+					Arith16 <= '1';
 				when others =>
-					Set_BusB_To <= "1001";
 				end case;
-				Arith16 <= '1';
-			when others =>
-			end case;
+			end if;
 		when "00000011"|"00010011"|"00100011"|"00110011" =>
 			-- INC ss
 			if Mode = 3 then
