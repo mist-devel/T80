@@ -515,8 +515,15 @@ begin
 			end if;
 		when "11111001" =>
 			-- LD SP,HL
-			TStates <= "110";
-			LDSPHL <= '1';
+			if Mode = 3 then
+				MCycles <= "010";
+				if MCycle = "010" then
+					LDSPHL <= '1';
+				end if;
+			else
+				TStates <= "110";
+				LDSPHL <= '1';
+			end if;
 		when "11000101"|"11010101"|"11100101"|"11110101" =>
 			-- PUSH qq
 			if Mode = 3 then
