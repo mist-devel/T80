@@ -1043,7 +1043,9 @@ begin
 			when 3 =>
 				Inc_PC <= '1';
 				Jump <= '1';
-				LDW <= '1';
+				if Mode /= 3 then
+					LDW <= '1';
+				end if;
 			when others => null;
 			end case;
 		when "11000010"|"11001010"|"11010010"|"11011010"|"11100010"|"11101010"|"11110010"|"11111010" =>
@@ -1114,7 +1116,9 @@ begin
 					Inc_PC <= '1';
 					LDZ <= '1';
 				when 3 =>
-					LDW <= '1';
+					if Mode /= 3 then
+						LDW <= '1';
+					end if;
 					Inc_PC <= '1';
 					if is_cc_true(F, to_bitvector(IR(5 downto 3))) then
 						Jump <= '1';
