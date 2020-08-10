@@ -842,30 +842,50 @@ begin
 				end case;
 			elsif IntCycle = '1' then
 				-- INT (IM 2)
-				MCycles <= "101";
-				case to_integer(unsigned(MCycle)) is
-				when 1 =>
-					LDZ <= '1';
-					TStates <= "101";
-					IncDec_16 <= "1111";
-					Set_Addr_To <= aSP;
-					Set_BusB_To <= "1101";
-				when 2 =>
-					--TStates <= "100";
-					Write <= '1';
-					IncDec_16 <= "1111";
-					Set_Addr_To <= aSP;
-					Set_BusB_To <= "1100";
-				when 3 =>
-					--TStates <= "100";
-					Write <= '1';
-				when 4 =>
-					Inc_PC <= '1';
-					LDZ <= '1';
-				when 5 =>
-					Jump <= '1';
-				when others => null;
-				end case;
+				if mode = 3 then
+					MCycles <= "100";
+					case to_integer(unsigned(MCycle)) is
+					when 1 =>
+						LDZ <= '1';
+						TStates <= "110";
+						IncDec_16 <= "1111";
+						Set_Addr_To <= aSP;
+						Set_BusB_To <= "1101";
+					when 2 =>
+						Write <= '1';
+						IncDec_16 <= "1111";
+						Set_Addr_To <= aSP;
+						Set_BusB_To <= "1100";
+					when 3 =>
+						Write <= '1';
+					when others => null;
+					end case;
+				else
+					MCycles <= "101";
+					case to_integer(unsigned(MCycle)) is
+					when 1 =>
+						LDZ <= '1';
+						TStates <= "101";
+						IncDec_16 <= "1111";
+						Set_Addr_To <= aSP;
+						Set_BusB_To <= "1101";
+					when 2 =>
+						--TStates <= "100";
+						Write <= '1';
+						IncDec_16 <= "1111";
+						Set_Addr_To <= aSP;
+						Set_BusB_To <= "1100";
+					when 3 =>
+						--TStates <= "100";
+						Write <= '1';
+					when 4 =>
+						Inc_PC <= '1';
+						LDZ <= '1';
+					when 5 =>
+						Jump <= '1';
+					when others => null;
+					end case;
+				end if;
 			else
 				-- NOP
 			end if;
