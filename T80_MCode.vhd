@@ -1031,7 +1031,11 @@ begin
 -- JUMP GROUP
 		when "11000011" =>
 			-- JP nn
-			MCycles <= "011";
+			if Mode = 3 then
+				MCycles <= "100";
+			else
+				MCycles <= "011";
+			end if;
 			case to_integer(unsigned(MCycle)) is
 			when 2 =>
 				Inc_PC <= '1';
@@ -1100,7 +1104,11 @@ begin
 				end case;
 			else
 				-- JP cc,nn
-				MCycles <= "011";
+				if Mode = 3 then
+					MCycles <= "100";
+				else
+					MCycles <= "011";
+				end if;
 				case to_integer(unsigned(MCycle)) is
 				when 2 =>
 					Inc_PC <= '1';
@@ -1110,6 +1118,8 @@ begin
 					Inc_PC <= '1';
 					if is_cc_true(F, to_bitvector(IR(5 downto 3))) then
 						Jump <= '1';
+					elsif Mode = 3 then
+						MCycles <= "011";
 					end if;
 				when others => null;
 				end case;
