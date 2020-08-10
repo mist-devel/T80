@@ -1052,7 +1052,7 @@ begin
 	Stop <= I_DJNZ;
 	NoRead <= NoRead_int;
 	Write <= Write_int;
-	A <= ABus when NoRead_int = '0' or Write_int = '1' else ABus_last;
+	A <= ABus when (Mode > 1) or (NoRead_int = '0' or Write_int = '1') else ABus_last;
 
 
 -------------------------------------------------------------------------
