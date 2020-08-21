@@ -21,7 +21,7 @@
 -- ****
 -- Z80 compatible microprocessor core
 --
--- Version : 0247
+-- Version : 0250
 -- Copyright (c) 2001-2002 Daniel Wallner (jesus@opencores.org)
 -- All rights reserved
 --
@@ -73,6 +73,7 @@
 --      0240 : Added interrupt ack fix by Mike Johnson, changed (IX/IY+d) timing and changed flags in GB mode
 --      0242 : Added I/O wait, fixed refresh address, moved some registers to RAM
 --      0247 : Fixed bus req/ack cycle
+--      0250 : Added R800 Multiplier by TobiFlex 2017.10.15
 --
 
 library IEEE;
@@ -118,6 +119,7 @@ entity T80 is
 		IntCycle_n : out std_logic;
 		IntE       : out std_logic;
 		Stop       : out std_logic;
+		R800_mode  : in  std_logic := '0';
 		out0       : in  std_logic := '0';  -- 0 => OUT(C),0, 1 => OUT(C),255
 		REG        : out std_logic_vector(211 downto 0); -- IFF2, IFF1, IM, IY, HL', DE', BC', IX, HL, DE, BC, PC, SP, R, I, F', A', F, A
 
@@ -155,6 +157,9 @@ architecture rtl of T80 is
 	signal IR                   : std_logic_vector(7 downto 0);         -- Instruction register
 	signal ISet                 : std_logic_vector(1 downto 0);         -- Instruction set selector
 	signal RegBusA_r            : std_logic_vector(15 downto 0);
+	signal MULU_Prod32          : std_logic_vector(31 downto 0);
+	signal MULU_tmp             : std_logic_vector(31 downto 0);
+	signal MULU_Fakt1           : std_logic_vector(15 downto 0);
 
 	signal ID16                 : signed(15 downto 0);
 	signal Save_Mux             : std_logic_vector(7 downto 0);
@@ -245,6 +250,8 @@ architecture rtl of T80 is
 	signal I_RRD                : std_logic;
 	signal I_RXDD               : std_logic;
 	signal I_INRC               : std_logic;
+	signal I_MULUB              : std_logic;
+	signal I_MULU               : std_logic;
 	signal SetWZ                : std_logic_vector(1 downto 0);
 	signal SetDI                : std_logic;
 	signal SetEI                : std_logic;
@@ -326,6 +333,8 @@ begin
 			I_RLD       => I_RLD,
 			I_RRD       => I_RRD,
 			I_INRC      => I_INRC,
+			I_MULUB     => I_MULUB,
+			I_MULU      => I_MULU,
 			SetWZ       => SetWZ,
 			SetDI       => SetDI,
 			SetEI       => SetEI,
@@ -333,7 +342,8 @@ begin
 			Halt        => Halt,
 			NoRead      => NoRead_int,
 			Write       => Write_int,
-			XYbit_undoc => XYbit_undoc);
+			XYbit_undoc => XYbit_undoc,
+			R800_mode   => R800_mode);
 
 	alu : T80_ALU
 		generic map(
@@ -876,6 +886,42 @@ begin
 
 ---------------------------------------------------------------------------
 --
+-- Multiply
+--
+---------------------------------------------------------------------------
+	process (CLK_n, ACC, RegBusB, MULU_tmp, MULU_Fakt1, MULU_Prod32)
+	begin
+
+		MULU_tmp(31 downto 12) <= std_logic_vector((unsigned(MULU_Fakt1)*unsigned(MULU_Prod32(3 downto 0)))+unsigned("0000"&MULU_Prod32(31 downto 16)));
+		MULU_tmp(11 downto 0) <= MULU_Prod32(15 downto 4);
+
+		if rising_edge(CLK_n) then
+			if ClkEn = '1' then
+				if T_Res='1' then
+					if I_MULUB='1' then
+						MULU_Prod32(7 downto 0) <= ACC;
+						MULU_Prod32(15 downto 8) <= "--------";
+						MULU_Prod32(31 downto 16) <= X"0000";
+						MULU_Fakt1(7 downto 0) <= "00000000";
+						if Set_BusB_To(0) = '1' then
+							MULU_Fakt1(15 downto 8) <= RegBusB(7 downto 0);
+						else
+							MULU_Fakt1(15 downto 8) <= RegBusB(15 downto 8);
+						end if;
+					else
+						MULU_Prod32(15 downto 0) <= RegBusA;
+						MULU_Prod32(31 downto 16) <= X"0000";
+						MULU_Fakt1 <= RegBusB;
+					end if;
+				else
+					MULU_Prod32 <= MULU_tmp;
+				end if;
+			end if;
+		end if;
+	end process;
+
+---------------------------------------------------------------------------
+--
 -- BC('), DE('), HL('), IX and IY
 --
 ---------------------------------------------------------------------------
@@ -929,7 +975,7 @@ begin
 				(TState = 3 and MCycle = "001" and IncDec_16(2) = '1')) and IncDec_16(1 downto 0) = "10" else
 			-- EX HL,DL
 			Alternate & "10" when ExchangeDH = '1' and TState = 3 else
-			Alternate & "01" when ExchangeDH = '1' and TState = 4 else
+			Alternate & "01" when (ExchangeDH = '1' or I_MULU = '1') and TState = 4 else
 			-- LDHLSP
 			"010" when LDHLSP = '1' and TState = 4 else
 			-- Bus A / Write
@@ -944,7 +990,7 @@ begin
 	ID16 <= signed(RegBusA) - 1 when IncDec_16(3) = '1' else
 			signed(RegBusA) + 1;
 
-	process (Save_ALU_r, Auto_Wait_t1, ALU_OP_r, Read_To_Reg_r,
+	process (Save_ALU_r, Auto_Wait_t1, ALU_OP_r, Read_To_Reg_r, I_MULU, T_Res,
 			ExchangeDH, IncDec_16, MCycle, TState, Wait_n, LDHLSP)
 	begin
 		RegWEH <= '0';
@@ -957,6 +1003,11 @@ begin
 				RegWEL <= Read_To_Reg_r(0);
 			when others =>
 			end case;
+		end if;
+
+		if I_MULU = '1' and (T_Res = '1' or TState = 4) then    -- TState = 4 DE write
+			RegWEH <= '1';
+			RegWEL <= '1';
 		end if;
 
 		if ExchangeDH = '1' and (TState = 3 or TState = 4) then
@@ -981,11 +1032,21 @@ begin
 
 	TmpAddr2 <= std_logic_vector(unsigned(signed(SP) + signed(Save_Mux)));
 
-	process (Save_Mux, RegBusB, RegBusA_r, ID16,
+	process (Save_Mux, RegBusB, RegBusA_r, ID16, I_MULU, MULU_Prod32, MULU_tmp, T_Res,
 			ExchangeDH, IncDec_16, MCycle, TState, Wait_n, LDHLSP, TmpAddr2)
 	begin
 		RegDIH <= Save_Mux;
 		RegDIL <= Save_Mux;
+
+		if I_MULU = '1' then
+			if T_Res = '1' then
+				RegDIH <= MULU_Prod32(31 downto 24);
+				RegDIL <= MULU_Prod32(23 downto 16);
+			else
+				RegDIH <= MULU_tmp(15 downto 8);    -- TState = 4 DE write
+				RegDIL <= MULU_tmp(7 downto 0);
+			end if;
+		end if;
 
 		if LDHLSP = '1' and MCycle = "010" and TState = 4 then
 			RegDIH <= TmpAddr2(15 downto 8);

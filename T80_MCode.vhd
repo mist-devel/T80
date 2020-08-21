@@ -19,7 +19,7 @@
 -- ****
 -- Z80 compatible microprocessor core
 --
--- Version : 0242
+-- Version : 0250
 -- Copyright (c) 2001-2002 Daniel Wallner (jesus@opencores.org)
 -- All rights reserved
 --
@@ -69,6 +69,7 @@
 --      0240 : Added (IX/IY+d) states, removed op-codes from mode 2 and added all remaining mode 3 op-codes
 --      0240mj1 fix for HL inc/dec for INI, IND, INIR, INDR, OUTI, OUTD, OTIR, OTDR
 --      0242 : Fixed I/O instruction timing, cleanup
+--      0250 : Added R800 Multiplier by TobiFlex 2017.10.15
 --
 
 library IEEE;
@@ -140,6 +141,8 @@ entity T80_MCode is
       I_RLD       : out std_logic;
       I_RRD       : out std_logic;
       I_INRC      : out std_logic;
+      I_MULUB     : out std_logic;
+      I_MULU      : out std_logic;
       SetWZ       : out std_logic_vector(1 downto 0);
       SetDI       : out std_logic;
       SetEI       : out std_logic;
@@ -147,7 +150,8 @@ entity T80_MCode is
       Halt        : out std_logic;
       NoRead      : out std_logic;
       Write       : out std_logic;
-      XYbit_undoc : out std_logic
+      XYbit_undoc : out std_logic;
+      R800_mode   : in  std_logic
    );
 end T80_MCode;
 
@@ -185,7 +189,7 @@ architecture rtl of T80_MCode is
 
 begin
 
-	process (IR, ISet, MCycle, F, NMICycle, IntCycle, XY_State)
+	process (IR, ISet, MCycle, F, NMICycle, IntCycle, XY_State, R800_mode)
 		variable DDD   : std_logic_vector(2 downto 0);
 		variable SSS   : std_logic_vector(2 downto 0);
 		variable DPair : std_logic_vector(1 downto 0);
@@ -243,6 +247,8 @@ begin
 		I_RLD <= '0';
 		I_RRD <= '0';
 		I_INRC <= '0';
+		I_MULUB <= '0';
+		I_MULU <= '0';
 		SetDI <= '0';
 		SetEI <= '0';
 		IMode <= "11";
@@ -1769,13 +1775,13 @@ begin
 				|                                            "10101100"|"10101101"|"10101110"|"10101111"
 				|                                            "10110100"|"10110101"|"10110110"|"10110111"
 				|                                            "10111100"|"10111101"|"10111110"|"10111111"
-				|"11000000"|"11000001"|"11000010"|"11000011"|"11000100"|"11000101"|"11000110"|"11000111"
-				|"11001000"|"11001001"|"11001010"|"11001011"|"11001100"|"11001101"|"11001110"|"11001111"
-				|"11010000"|"11010001"|"11010010"|"11010011"|"11010100"|"11010101"|"11010110"|"11010111"
-				|"11011000"|"11011001"|"11011010"|"11011011"|"11011100"|"11011101"|"11011110"|"11011111"
+				|"11000000"|           "11000010"           |"11000100"|"11000101"|"11000110"|"11000111"
+				|"11001000"|           "11001010"|"11001011"|"11001100"|"11001101"|"11001110"|"11001111"
+				|"11010000"|           "11010010"|"11010011"|"11010100"|"11010101"|"11010110"|"11010111"
+				|"11011000"|           "11011010"|"11011011"|"11011100"|"11011101"|"11011110"|"11011111"
 				|"11100000"|"11100001"|"11100010"|"11100011"|"11100100"|"11100101"|"11100110"|"11100111"
 				|"11101000"|"11101001"|"11101010"|"11101011"|"11101100"|"11101101"|"11101110"|"11101111"
-				|"11110000"|"11110001"|"11110010"|"11110011"|"11110100"|"11110101"|"11110110"|"11110111"
+				|"11110000"|"11110001"|"11110010"           |"11110100"|"11110101"|"11110110"|"11110111"
 				|"11111000"|"11111001"|"11111010"|"11111011"|"11111100"|"11111101"|"11111110"|"11111111" =>
 				null; -- NOP, undocumented
 			when "01110111"|"01111111" =>
@@ -2159,6 +2165,46 @@ begin
 					TStates <= "101";
 				when others => null;
 				end case;
+			when "11000001"|"11001001"|"11010001"|"11011001" =>
+				 --R800 MULUB
+				if R800_mode = '1' then
+					MCycles <= "010";
+					case to_integer(unsigned(MCycle)) is
+					when 1 =>
+						NoRead <= '1';
+						I_MULUB <= '1';
+						Set_BusB_To(2 downto 0) <= IR(5 downto 3);
+						Set_BusB_To(3) <= '0';
+					when 2 =>
+						NoRead <= '1';
+						I_MULU <= '1';
+						Set_BusA_To(2 downto 0) <= "100";
+					when others => null;
+					end case;
+				end if;
+			when "11000011"|"11110011" =>
+				--R800 MULUW
+				if R800_mode = '1' then
+					MCycles <= "010";
+					case to_integer(unsigned(MCycle)) is
+					when 1 =>
+					NoRead <= '1';
+						if DPAIR = "11" then
+							Set_BusB_To(3 downto 0) <= "1000";
+						else
+							Set_BusB_To(2 downto 1) <= DPAIR;
+							Set_BusB_To(0) <= '0';
+							Set_BusB_To(3) <= '0';
+						end if;
+						Set_BusA_To(2 downto 0) <= "100";
+					when 2 =>
+						TStates <= "101";
+						NoRead <= '1';
+						I_MULU <= '1';
+						Set_BusA_To(2 downto 0) <= "100";
+					when others => null;
+					end case;
+				end if;
 			end case;
 
 		end case;
