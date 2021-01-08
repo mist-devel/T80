@@ -547,7 +547,8 @@ begin
 						elsif MCycle = MCycles and NMICycle = '1' then
 							ABus <= "0000000001100110";
 							PC <= "0000000001100110";
-						elsif MCycle = "011" and IntCycle = '1' and IStatus = "10" then
+						elsif ((Mode /= 3 and MCycle = "011") or (Mode = 3 and MCycle = "100"))
+							and IntCycle = '1' and IStatus = "10" then
 							ABus(15 downto 8) <= I;
 							ABus(7 downto 0) <= WZ(7 downto 0);
 							PC(15 downto 8) <= unsigned(I);
@@ -1276,6 +1277,13 @@ begin
 								BusAck <= '1';
 							else
 								TState <= "001";
+								if (IntCycle = '1' and Mode = 3) then -- GB: read interrupt at MCycle 3
+									if (MCycle = "010") then
+										M1_n <= '0';
+									else
+										M1_n <= '1';
+									end if;
+								end if;
 								if NextIs_XY_Fetch = '1' then
 									MCycle <= "110";
 									Pre_XY_F_M <= MCycle;
