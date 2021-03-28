@@ -209,8 +209,9 @@ package T80_Pack is
 		Halt                    : out std_logic;
 		NoRead                  : out std_logic;
 		Write                   : out std_logic;
-		XYbit_undoc             : out std_logic;
-		R800_mode               : in  std_logic
+		R800_mode               : in  std_logic;
+		No_PC                   : out std_logic;
+		XYbit_undoc             : out std_logic
 	);
 	end component;
 
