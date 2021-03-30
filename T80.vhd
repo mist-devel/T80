@@ -497,6 +497,11 @@ begin
 							IR <= DInst;
 						end if;
 
+						if Mode <= 1 and IntCycle = '1' and IStatus = "10" then
+							-- IM2 vector address low byte from bus
+							WZ(7 downto 0) <= DInst;
+						end if;
+
 						ISet <= "00";
 						if Prefix /= "00" then
 							if Prefix = "11" then

@@ -884,7 +884,6 @@ begin
 					MCycles <= "101";
 					case to_integer(unsigned(MCycle)) is
 					when 1 =>
-						LDZ <= '1';
 						TStates <= "101";
 						IncDec_16 <= "1111";
 						Set_Addr_To <= aSP;
