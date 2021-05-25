@@ -318,7 +318,7 @@ begin
    process(Reset_s, CLK_n)
    begin
       if Reset_s = '0' then
-         IORQ_t1 <= '1'
+         IORQ_t1 <= '1';
       elsif CLK_n'event and CLK_n = '0' then
          if TState = "001" then
             IORQ_t1 <= not IntCycle_n;
