@@ -986,6 +986,7 @@ begin
 			-- EX HL,DL
 			Alternate & "10" when ExchangeDH = '1' and TState = 3 else
 			Alternate & "01" when (ExchangeDH = '1' or I_MULU = '1') and TState = 4 else
+			-- EX (SP),HL (HL(IX,IY) <= WZ)
 			Alternate & "10" when ExchangeWH = '1' and XY_State = "00" and TState = 4 else
 			XY_State(1) & "11" when ExchangeWH = '1' and TState = 4 else
 			-- LDHLSP
